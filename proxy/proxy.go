@@ -20,50 +20,29 @@ func sameHost(handler http.Handler) http.Handler {
 	})
 }
 
-// Append additional query params to the original URL query.
-func queryCombiner(handler http.Handler, addon string) http.Handler {
-	// first parse the provided string to pull out the keys and values
-	values, err := url.ParseQuery(addon)
-	if err != nil {
-		log.Fatal("addon failed to parse")
-	}
-
-	// now we apply our addon params to the existing query
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		query := r.URL.Query()
-
-		for k, _ := range values {
-			query.Add(k, values.Get(k))
-		}
-
-		r.URL.RawQuery = query.Encode()
-		handler.ServeHTTP(w, r)
-	})
-}
-
 // Allow cross origin resource sharing
-func addCORS(handler http.Handler) http.Handler {
+func addHeaders(handler http.Handler, corsDomain string, apiKey string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
+		// w.Header().Set("Access-Control-Allow-Headers", "X-Requested-With")
+		r.Header.Set("x-api-key", apiKey)
 		handler.ServeHTTP(w, r)
 	})
 }
 
 // Combine the two functions above with http.NewSingleHostReverseProxy
-func Proxy(remoteUrl string, queryAddon string) http.Handler {
+func Proxy(remoteURL string, corsDomain string, apiKey string) http.Handler {
 	// pull the root url we're proxying to from an environment variable.
-	serverUrl, err := url.Parse(remoteUrl)
+	serverURL, err := url.Parse(remoteURL)
+
 	if err != nil {
 		log.Fatal("URL failed to parse")
 	}
 
 	// initialize our reverse proxy
-	reverseProxy := httputil.NewSingleHostReverseProxy(serverUrl)
+	reverseProxy := httputil.NewSingleHostReverseProxy(serverURL)
 	// wrap that proxy with our sameHost function
 	singleHosted := sameHost(reverseProxy)
-	// wrap that with our query param combiner
-	combined := queryCombiner(singleHosted, queryAddon)
 	// and finally allow CORS
-	return addCORS(combined)
+	return addHeaders(singleHosted, corsDomain, apiKey)
 }
