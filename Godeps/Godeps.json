@@ -1,0 +1,6 @@
+{
+	"ImportPath": "github.com/shatalov-boris/api_proxy",
+	"GoVersion": "go1.11",
+	"GodepVersion": "v80",
+	"Deps": []
+}

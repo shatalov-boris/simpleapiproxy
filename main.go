@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/shatalov-boris/api_proxy/apiproxy"
+	"github.com/shatalov-boris/api_proxy/proxy"
 )
 
 func main() {
