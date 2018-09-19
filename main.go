@@ -15,9 +15,10 @@
 package main
 
 import (
-	"github.com/semanticart/simpleapiproxy/apiproxy"
 	"net/http"
 	"os"
+
+	"github.com/shatalov-boris/api_proxy/apiproxy"
 )
 
 func main() {
